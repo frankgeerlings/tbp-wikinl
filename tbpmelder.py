@@ -73,7 +73,8 @@ def main(*args):
 
   contributor_nom = dict()
   for nom in noms:
-    handle_nomination(site, nom, contributor_nom)
+    if not nom.revoked:
+      handle_nomination(site, nom, contributor_nom)
 
   notify_contributors(site, contributor_nom)
 

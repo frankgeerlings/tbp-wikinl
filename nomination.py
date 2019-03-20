@@ -11,6 +11,18 @@ class Nomination(object):
     return set(art_in_title + [unicode(a.value) for a in art_in_linkstemplate])
 
   @staticmethod
+  def find_strikethrough(title):
+    """
+    >>> Nomination.find_strikethrough(u'== <s>Yes</s> ==')
+    True
+
+    >>> Nomination.find_strikethrough(u'== No ==')
+    False
+
+    """
+    return re.search(ur'<s>(.*?)</s>', unicode(title)) is not None
+
+  @staticmethod
   def find_r(regex, text):
     r = regex.search(text)
     if (not r is None):
@@ -66,9 +78,25 @@ class Nomination(object):
 
     >>> Nomination(section('== [[First]] == \\n {{tbp-links|Second}}'), 'whatever').pages
     set([u'Second', u'First'])
+
+    When a nomination title contains strikethrough (<s>) the nomination revoked flag is set
+
+    >>> Nomination(section('== <s> [[Title]] </s>=='), 'whatever').revoked
+    True
+
+    When the title doesn't contain strikethrough the nomination flag isn't set
+
+    >>> Nomination(section('== [[Title]] =='), 'whatever').revoked
+    False
+
+    Revoking a nomination will still have the nominated pages listed
+
+    >>> Nomination(section('== <s> [[First]] </s> == \\n {{tbp-links|Second}}'), 'whatever').pages
+    set([u'Second', u'First'])
     """
     title = section.get(0).title
 
     self.pages = self.find_pages(section)
     self.nominator = self.find_first_signature(section)
+    self.revoked = self.find_strikethrough(title)
     self.wikilink = pagename + '#' + title.strip_code().strip()
