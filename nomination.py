@@ -58,6 +58,17 @@ class Nomination(object):
     return min([x for x in first if x is not None])[1]
 
   def __init__(self, section, pagename):
+    """
+    >>> section = lambda text: parse(text).get_sections(levels=[2], include_headings=True)[0]
+
+    >>> Nomination(section('== [[Title]] =='), 'whatever').pages
+    set([u'Title'])
+
+    >>> Nomination(section('== [[First]] == \\n {{tbp-links|Second}}'), 'whatever').pages
+    set([u'Second', u'First'])
+    """
+    title = section.get(0).title
+
     self.pages = self.find_pages(section)
     self.nominator = self.find_first_signature(section)
-    self.wikilink = pagename + '#' + section.get(0).title.strip_code().strip()
+    self.wikilink = pagename + '#' + title.strip_code().strip()
