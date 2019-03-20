@@ -1,5 +1,6 @@
 from pprint import pprint
 import pywikibot
+import re
 
 def assemble_text(nominations):
   if len(nominations) == 1:
@@ -14,6 +15,15 @@ def assemble_text(nominations):
 
   return message
 
+def safe_for_summary(text):
+  """
+  Removes wikilinks from a string so it can be used as a change summary string.
+
+  >>> safe_for_summary(u'Nieuw onderwerp: /* [[SHTF]] */')
+  u'Nieuw onderwerp: /* SHTF */'
+  """
+  return re.sub(ur'\[\[(.*?)\]\]', u"\\1", text)
+
 def assemble_title(nominations):
   if len(nominations) == 1:
     return u'Beoordelingsnominatie [[%s]]' % nominations[0][0]
@@ -22,7 +32,7 @@ def assemble_title(nominations):
 
 def leave_notification(site, user, nominations, talk_page):
   try:
-    summary = u'Nieuw onderwerp: /* %s */ Automatische melding van beoordelingsnominatie' % assemble_title(nominations)
+    summary = u'Nieuw onderwerp: /* %s */ Automatische melding van beoordelingsnominatie' % safe_for_summary(assemble_title(nominations))
     text = talk_page.get()
   except pywikibot.NoPage:
     summary = u'Welkom op Wikipedia; %s' % assemble_title(nominations)
