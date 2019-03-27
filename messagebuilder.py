@@ -7,9 +7,9 @@ def assemble_text(nominations):
     page, nom = nominations[0]
     titles = u'Het gaat om [[%s]] dat is genomineerd door [[Gebruiker:%s|%s]].' % (page, nom.nominator, nom.nominator)
   else:
-    titles = u'De genomineerde artikelen zijn: \n'
+    titles = u'De genomineerde artikelen zijn:'
     for page, nom in nominations:
-      titles += '* [[%s]] (aangemeld door [[Gebruiker:%s|%s]]' % (page, nom.nominator, nom.nominator)
+      titles += '\n* [[%s]] (aangemeld door [[Gebruiker:%s|%s]])' % (page, nom.nominator, nom.nominator)
   wikilink = nominations[0][1].wikilink
   message = u'{{subst:Automatische kennisgeving nominatie voor beoordeling|%s|%s|%s}} --~~~~' % (assemble_title(nominations), titles, wikilink)
 
