@@ -40,4 +40,8 @@ def leave_notification(site, user, nominations, talk_page):
 
   text = text + '\n\n' + assemble_text(nominations)
   talk_page.text = text
-  talk_page.save(summary=summary, minor=False, botflag=False)
+
+  try:
+    talk_page.save(summary=summary, minor=False, botflag=False)
+  except pywikibot.OtherPageSaveError:
+    pass
