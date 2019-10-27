@@ -26,7 +26,7 @@ class Nomination(object):
   def find_r(regex, text):
     r = regex.search(text)
     if (not r is None):
-      return (r.start(), r.group('user'))
+      return (r.start(), r.group('user').strip())
     else:
       return None
 
@@ -45,6 +45,9 @@ class Nomination(object):
     >>> Nomination.find_first_signature('{{User:First/Handtekening}} [[User:Second]]')
     u'First'
 
+    >>> Nomination.find_first_signature('[[Overleg_gebruiker:Daniuu | Daniuu]] 26 okt 2019 23:16 (CEST)')
+    u'Daniuu'
+
     When there are no results, None is returned
     >>> any([ None, None, None])
     False
@@ -53,12 +56,14 @@ class Nomination(object):
     True
     """
     userR = re.compile(r'\[\[(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)(?:\|.*?\]\]|\]\])')
+    talkR = re.compile(r'\[\[(?:[Oo]verleg[_ ]gebruiker):(?P<user>.*?)(?:\|.*?\]\]|\]\])')
     strictTemplateR = re.compile(r'\{\{(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)\/[Hh]andtekening\}\}')
     templateR = re.compile(r'\{\{(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)\/.*?\}\}')
     
     first = [
 	Nomination.find_r(templateR, unicode(section)) ,
 	Nomination.find_r(userR, unicode(section)) ,
+	Nomination.find_r(talkR, unicode(section)) ,
 	Nomination.find_r(strictTemplateR, unicode(section)) ]
 
     """
