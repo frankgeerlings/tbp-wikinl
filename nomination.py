@@ -54,6 +54,11 @@ class Nomination(object):
 
     >>> Nomination.find_first_signature('Blah blah blah') is None
     True
+
+    Currently misattributed text, as reported in Phabricator ticket T238647. The actual result should be
+    u'Wutsje'
+    >>> Nomination.find_first_signature('* Mogelijk wel relevant, zie [https://nl.wikipedia.org/wiki/Speciaal:VerwijzingenNaarHier/Bob_Winter hier], maar ernstig wiu. Was als nuweg genomineerd, maar lijkt niet aan de [[Wikipedia:Richtlijnen_voor_moderatoren#Een_pagina_direct_verwijderen|criteria]] te voldoen. Ping [[Gebruiker:Piet.Wijker|Piet.Wijker]] en [[Gebruiker:Rudolphous|Rudolphous]]. [[User:Wutsje|Wutsje]] 18 nov 2019 20:29 (CET)')
+    u'Piet.Wijker'
     """
     userR = re.compile(r'\[\[(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)(?:\|.*?\]\]|\]\])')
     talkR = re.compile(r'\[\[(?:[Oo]verleg[_ ]gebruiker):(?P<user>.*?)(?:\|.*?\]\]|\]\])')
