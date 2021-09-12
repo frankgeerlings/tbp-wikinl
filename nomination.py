@@ -24,52 +24,84 @@ class Nomination(object):
 
   @staticmethod
   def find_r(regex, text):
-    r = regex.search(text)
-    if (not r is None):
-      return (r.start(), r.group('user').strip())
-    else:
+    """
+    This is a helper function that finds the last matching regex in a string.
+
+    >>> Nomination.find_r(re.compile(r'(?P<user>\w)'), 'AB')
+    (1, 'B')
+    """
+    matches = [i for i in regex.finditer(text)]
+
+    if not any(matches):
       return None
 
+    r = matches[-1]
+
+    return (r.start(), r.group('user').strip())
+
   @staticmethod
-  def find_first_signature(section):
+  def find_first_date_offset(section):
     """
-    >>> Nomination.find_first_signature('[[User:User name]]')
+    >>> Nomination.find_first_date_offset('18 nov 2019 20:29 (CET)')
+    0
+    >>> Nomination.find_first_date_offset('')
+    """
+    firstDate = re.search(r'\d+ [a-z]{3} \d{4}', section)
+
+    if firstDate is None:
+      return None
+
+    return firstDate.start()
+
+  @staticmethod
+  def text_up_to_and_including_first_comment(section):
+    date_offset = Nomination.find_first_date_offset(section)
+    if (date_offset is None):
+      return section
+
+    return section[0:date_offset]
+
+  @staticmethod
+  def find_last_signature(section):
+    """
+    >>> Nomination.find_last_signature('[[User:User name]]')
     u'User name'
 
-    >>> Nomination.find_first_signature('[[Gebruiker:User name]]')
+    >>> Nomination.find_last_signature('[[Gebruiker:User name]]')
     u'User name'
 
-    >>> Nomination.find_first_signature('{{User:User name/Handtekening}}')
+    >>> Nomination.find_last_signature('{{User:User name/Handtekening}}')
     u'User name'
 
-    >>> Nomination.find_first_signature('{{User:First/Handtekening}} [[User:Second]]')
+    >>> Nomination.find_last_signature('{{User:First/Handtekening}} [[User:Second]]')
     u'First'
 
-    >>> Nomination.find_first_signature('[[Overleg_gebruiker:Daniuu | Daniuu]] 26 okt 2019 23:16 (CEST)')
+    >>> Nomination.find_last_signature('[[Overleg_gebruiker:Daniuu | Daniuu]] 26 okt 2019 23:16 (CEST)')
     u'Daniuu'
 
     When there are no results, None is returned
     >>> any([ None, None, None])
     False
 
-    >>> Nomination.find_first_signature('Blah blah blah') is None
+    >>> Nomination.find_last_signature('Blah blah blah') is None
     True
 
-    Currently misattributed text, as reported in Phabricator ticket T238647. The actual result should be
+    Regression test for the case reported in Phabricator ticket T238647
+    >>> Nomination.find_last_signature('* Mogelijk wel relevant, zie [https://nl.wikipedia.org/wiki/Speciaal:VerwijzingenNaarHier/Bob_Winter hier], maar ernstig wiu. Was als nuweg genomineerd, maar lijkt niet aan de [[Wikipedia:Richtlijnen_voor_moderatoren#Een_pagina_direct_verwijderen|criteria]] te voldoen. Ping [[Gebruiker:Piet.Wijker|Piet.Wijker]] en [[Gebruiker:Rudolphous|Rudolphous]]. [[User:Wutsje|Wutsje]] 18 nov 2019 20:29 (CET)  And then stuff follows after the date, including perhaps more signatures: [[User:Demo|TestUser]][[Gebruiker:Rudolphous|Rudolphous]]')
     u'Wutsje'
-    >>> Nomination.find_first_signature('* Mogelijk wel relevant, zie [https://nl.wikipedia.org/wiki/Speciaal:VerwijzingenNaarHier/Bob_Winter hier], maar ernstig wiu. Was als nuweg genomineerd, maar lijkt niet aan de [[Wikipedia:Richtlijnen_voor_moderatoren#Een_pagina_direct_verwijderen|criteria]] te voldoen. Ping [[Gebruiker:Piet.Wijker|Piet.Wijker]] en [[Gebruiker:Rudolphous|Rudolphous]]. [[User:Wutsje|Wutsje]] 18 nov 2019 20:29 (CET)')
-    u'Piet.Wijker'
     """
     userR = re.compile(r'\[\[(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)(?:\|.*?\]\]|\]\])')
     talkR = re.compile(r'\[\[(?:[Oo]verleg[_ ]gebruiker):(?P<user>.*?)(?:\|.*?\]\]|\]\])')
     strictTemplateR = re.compile(r'\{\{(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)\/[Hh]andtekening\}\}')
     templateR = re.compile(r'\{\{(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)\/.*?\}\}')
-    
+
+    opening_sentence = Nomination.text_up_to_and_including_first_comment(unicode(section))
+
     first = [
-	Nomination.find_r(templateR, unicode(section)) ,
-	Nomination.find_r(userR, unicode(section)) ,
-	Nomination.find_r(talkR, unicode(section)) ,
-	Nomination.find_r(strictTemplateR, unicode(section)) ]
+	Nomination.find_r(templateR, opening_sentence) ,
+	Nomination.find_r(userR, opening_sentence) ,
+	Nomination.find_r(talkR, opening_sentence) ,
+	Nomination.find_r(strictTemplateR, opening_sentence) ]
 
     """
     This handles the case where there are no signatures
@@ -107,6 +139,6 @@ class Nomination(object):
     title = section.get(0).title
 
     self.pages = self.find_pages(section)
-    self.nominator = self.find_first_signature(section)
+    self.nominator = self.find_last_signature(section)
     self.revoked = self.find_strikethrough(title)
     self.wikilink = pagename + '#' + title.strip_code().strip()
