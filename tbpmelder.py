@@ -52,7 +52,7 @@ def handle_nomination(site, nom, contributor_nom):
         continue
 
       noms = []
-      if contributor_nom.has_key(contributor):
+      if contributor in contributor_nom:
         noms = contributor_nom[contributor]
 
       noms.append((originalpage.title(), nom))
