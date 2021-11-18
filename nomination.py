@@ -4,23 +4,23 @@ import itertools, re
 class Nomination(object):
   def find_pages(self, section):
     title = section.get(0).title
-    art_in_title = [unicode(l.title) for l in parse(title).filter_wikilinks()]
+    art_in_title = [str(l.title) for l in parse(title).filter_wikilinks()]
     y = [x.params for x in section.filter_templates(matches = 'Links2|tbp-links')]
     art_in_linkstemplate = list(itertools.chain.from_iterable(y))
 
-    return set(art_in_title + [unicode(a.value) for a in art_in_linkstemplate])
+    return set(art_in_title + [str(a.value) for a in art_in_linkstemplate])
 
   @staticmethod
   def find_strikethrough(title):
     """
-    >>> Nomination.find_strikethrough(u'== <s>Yes</s> ==')
+    >>> Nomination.find_strikethrough('== <s>Yes</s> ==')
     True
 
-    >>> Nomination.find_strikethrough(u'== No ==')
+    >>> Nomination.find_strikethrough('== No ==')
     False
 
     """
-    return re.search(ur'<s>(.*?)</s>', unicode(title)) is not None
+    return re.search(r'<s>(.*?)</s>', str(title)) is not None
 
   @staticmethod
   def find_r(regex, text):
@@ -65,19 +65,19 @@ class Nomination(object):
   def find_last_signature(section):
     """
     >>> Nomination.find_last_signature('[[User:User name]]')
-    u'User name'
+    'User name'
 
     >>> Nomination.find_last_signature('[[Gebruiker:User name]]')
-    u'User name'
+    'User name'
 
     >>> Nomination.find_last_signature('{{User:User name/Handtekening}}')
-    u'User name'
+    'User name'
 
     >>> Nomination.find_last_signature('{{User:First/Handtekening}} [[User:Second]]')
-    u'First'
+    'First'
 
     >>> Nomination.find_last_signature('[[Overleg_gebruiker:Daniuu | Daniuu]] 26 okt 2019 23:16 (CEST)')
-    u'Daniuu'
+    'Daniuu'
 
     When there are no results, None is returned
     >>> any([ None, None, None])
@@ -88,14 +88,14 @@ class Nomination(object):
 
     Regression test for the case reported in Phabricator ticket T238647
     >>> Nomination.find_last_signature('* Mogelijk wel relevant, zie [https://nl.wikipedia.org/wiki/Speciaal:VerwijzingenNaarHier/Bob_Winter hier], maar ernstig wiu. Was als nuweg genomineerd, maar lijkt niet aan de [[Wikipedia:Richtlijnen_voor_moderatoren#Een_pagina_direct_verwijderen|criteria]] te voldoen. Ping [[Gebruiker:Piet.Wijker|Piet.Wijker]] en [[Gebruiker:Rudolphous|Rudolphous]]. [[User:Wutsje|Wutsje]] 18 nov 2019 20:29 (CET)  And then stuff follows after the date, including perhaps more signatures: [[User:Demo|TestUser]][[Gebruiker:Rudolphous|Rudolphous]]')
-    u'Wutsje'
+    'Wutsje'
     """
     userR = re.compile(r'\[\[(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)(?:\|.*?\]\]|\]\])')
     talkR = re.compile(r'\[\[(?:[Oo]verleg[_ ]gebruiker):(?P<user>.*?)(?:\|.*?\]\]|\]\])')
     strictTemplateR = re.compile(r'\{\{(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)\/[Hh]andtekening\}\}')
     templateR = re.compile(r'\{\{(?:[Uu]ser|[Gg]ebruiker):(?P<user>.*?)\/.*?\}\}')
 
-    opening_sentence = Nomination.text_up_to_and_including_first_comment(unicode(section))
+    opening_sentence = Nomination.text_up_to_and_including_first_comment(str(section))
 
     first = [
 	Nomination.find_r(templateR, opening_sentence) ,
@@ -116,10 +116,10 @@ class Nomination(object):
     >>> section = lambda text: parse(text).get_sections(levels=[2], include_headings=True)[0]
 
     >>> Nomination(section('== [[Title]] =='), 'whatever').pages
-    set([u'Title'])
+    {'Title'}
 
     >>> Nomination(section('== [[First]] == \\n {{tbp-links|Second}}'), 'whatever').pages
-    set([u'Second', u'First'])
+    {'Second', 'First'}
 
     When a nomination title contains strikethrough (<s>) the nomination revoked flag is set
 
@@ -134,7 +134,7 @@ class Nomination(object):
     Revoking a nomination will still have the nominated pages listed
 
     >>> Nomination(section('== <s> [[First]] </s> == \\n {{tbp-links|Second}}'), 'whatever').pages
-    set([u'Second', u'First'])
+    {'Second', 'First'}
     """
     title = section.get(0).title
 
