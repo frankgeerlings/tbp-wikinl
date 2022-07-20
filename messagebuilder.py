@@ -5,11 +5,11 @@ import re
 def assemble_text(nominations):
   if len(nominations) == 1:
     page, nom = nominations[0]
-    titles = 'Het gaat om [[%s]] dat is genomineerd door [[Gebruiker:%s|%s]].' % (page, nom.nominator, nom.nominator)
+    titles = 'Het gaat om [[%s]].' % page
   else:
     titles = 'De genomineerde artikelen zijn:'
     for page, nom in nominations:
-      titles += '\n* [[%s]] (genomineerd door [[Gebruiker:%s|%s]])' % (page, nom.nominator, nom.nominator)
+      titles += '\n* [[%s]]' % page
   wikilink = nominations[0][1].wikilink
   message = '{{subst:Automatische kennisgeving nominatie voor beoordeling|%s|%s|%s}} --~~~~' % (assemble_title(nominations), titles, wikilink)
 
