@@ -32,7 +32,7 @@ def major_contributors(site, page):
     rev1 = page.oldest_revision
     return [rev1.user]
     "TODO: Find contributors other than creator"
-  except pywikibot.NoPage:
+  except pywikibot.exceptions.NoPageError:
     "Page is already gone but that is ok"
     return []
 

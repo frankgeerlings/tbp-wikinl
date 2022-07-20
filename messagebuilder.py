@@ -34,7 +34,7 @@ def leave_notification(site, user, nominations, talk_page):
   try:
     summary = 'Nieuw onderwerp: /* %s */ Automatische melding van beoordelingsnominatie' % safe_for_summary(assemble_title(nominations))
     text = talk_page.get()
-  except pywikibot.NoPage:
+  except pywikibot.exceptions.NoPageError:
     summary = 'Welkom op Wikipedia; %s' % assemble_title(nominations)
     text = '{{Welkomstbericht}}'
 
