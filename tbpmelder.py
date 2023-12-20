@@ -27,10 +27,15 @@ def notify_contributors(site, contributor_nom):
 
     messagebuilder.leave_notification(site, user, remaining, talk)
 
+def user_exists(site, username):
+  user = pywikibot.User(site, username)
+  return user.exists() or user.isAnonymous()
+
 def major_contributors(site, page):
   try:
     rev1 = page.oldest_revision
-    return [rev1.user]
+
+    return [rev1.user] if user_exists(site, rev1.user) else []
     "TODO: Find contributors other than creator"
   except pywikibot.exceptions.NoPageError:
     "Page is already gone but that is ok"
